@@ -1,10 +1,20 @@
-import React from 'react'
+import React, { useRef, useState } from 'react'
 
 function Box(props: any) {
+    const mesh = useRef<THREE.Mesh>(null!)
+    const [hovered, setHover] = useState(false)
+    const [active, setActive] = useState(false)
     return (
-        <mesh {...props} recieveShadow={true}>
+        <mesh
+            {...props}
+            ref={mesh}
+            scale={active ? 1.5 : 1}
+            onClick={event => setActive(!active)}
+            onPointerOver={event => setHover(true)}
+            onPointerOut={event => setHover(false)}
+        >
             <boxBufferGeometry attach={'geometry'} />
-            <meshPhysicalMaterial attach={'material'} color="white" />
+            <meshStandardMaterial color={hovered ? 'hotpink' : 'orange'} />
         </mesh>
     )
 }
