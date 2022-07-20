@@ -1,15 +1,33 @@
 import * as THREE from 'three'
 import { IEditor } from './Engine/IEngine'
+import { IMessageHandler } from './Engine/MessageManager/IMessageHandler'
+import { Message } from './Engine/MessageManager/Message'
 
 /**
  * Represents an object that holds editor-specific information.
  */
-export class Editor implements IEditor {
-    private torus: THREE.Mesh
+export class Editor implements IEditor, IMessageHandler {
+    private raycaster: THREE.Raycaster
+    private clickMouse: THREE.Vector2
+    private moveMouse: THREE.Vector2
+    private dragable: THREE.Object3D
+
+    private sceneRef: THREE.Scene
+    private camera: THREE.Camera
+
     /**
      * on engine start
      */
-    public start(scene: THREE.Scene): void {}
+    public start(scene: THREE.Scene, props?: any): void {
+        Message.subscribe('MOUSE_CLICK', this)
+
+        this.raycaster = new THREE.Raycaster()
+        this.clickMouse = new THREE.Vector2()
+        this.moveMouse = new THREE.Vector2()
+
+        this.sceneRef = scene
+        this.camera = props.camera
+    }
 
     /**
      * Called before the main update loop, after updateReady has been called on the engine subsystems.
@@ -18,11 +36,30 @@ export class Editor implements IEditor {
     public updateReady(scene: THREE.Scene): void {
         // Load the test level. This should be configurable.
 
-        const pointLight = new THREE.PointLight(0xffffff)
-        pointLight.position.set(10, 5, 5)
-        pointLight.intensity = 4
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1)
+        dirLight.position.set(20, 5, 5)
+        dirLight.intensity = 4
+        const LightGizoms = new THREE.DirectionalLightHelper(dirLight)
+
         const ambientLight = new THREE.AmbientLight(0xffffff)
-        scene.add(pointLight, ambientLight)
+        scene.add(dirLight, LightGizoms, ambientLight)
+    }
+
+    /**
+     * on message function
+     * @param {Message} message
+     */
+    public onMessage(message: Message): void {
+        switch (message.code) {
+            case 'MOUSE_CLICK':
+                this.clickMouse.x = (message.event.clientX / window.innerWidth) * 2 - 1
+                this.clickMouse.y = (message.event.clientY / window.innerHeight) * 2 - 1
+
+                this.raycaster.setFromCamera(this.clickMouse, this.camera)
+                const found = this.raycaster.intersectObjects(this.sceneRef.children)
+                console.log(found)
+                break
+        }
     }
 
     /**

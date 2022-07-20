@@ -4,6 +4,7 @@
     "plugins": ["react", "@typescript-eslint"],
     "ignorePatterns": ["postcss.config.js", "tailwind.config.js"],
     "rules": {
+
         "react/display-name": 0
     }
 }

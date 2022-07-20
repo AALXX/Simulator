@@ -1,7 +1,7 @@
 import { IEditor } from './IEngine'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-import { ObjectManager } from './Object/ObjectManager'
+import { MeshManager } from './Mesh/MeshManager'
 import { InputManager } from './Input/InputManager'
 import { MessageBus } from './MessageManager/MessageBus'
 
@@ -39,11 +39,20 @@ export namespace UiDesignEngine {
          * @param {RefObject<HTMLCanvasElement>} canvasRef
          * @param {string} elementName
          */
-        public start(editor: IEditor, canvasRef: HTMLCanvasElement, elementName?: string): void {
+        public start(
+            editor: IEditor,
+            canvasRef: HTMLCanvasElement,
+            elementName?: string
+        ): void {
             this._editor = editor
 
             this._scene = new THREE.Scene()
-            this._camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+            this._camera = new THREE.PerspectiveCamera(
+                75,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            )
 
             this._renderer = new THREE.WebGLRenderer({ canvas: canvasRef })
             this._renderer.setPixelRatio(window.devicePixelRatio)
@@ -53,22 +62,21 @@ export namespace UiDesignEngine {
             this._camera.position.setZ(8)
             this._camera.position.setY(6)
 
-            this._controls = new OrbitControls(this._camera, this._renderer.domElement)
+            this._controls = new OrbitControls(
+                this._camera,
+                this._renderer.domElement
+            )
 
             // Trigger a resize to make sure the viewport is corrent.
             this.resize()
 
-            ObjectManager.load(this._scene)
+            MeshManager.load(this._scene)
             InputManager.initialize()
 
             // Begin the preloading phase, which waits for various thing to be loaded before starting the game.
             this.preloading()
 
-            const props = {
-                camera: this._camera
-            }
-
-            this._editor.start(this._scene, props)
+            this._editor.start(this._scene)
         }
 
         /**

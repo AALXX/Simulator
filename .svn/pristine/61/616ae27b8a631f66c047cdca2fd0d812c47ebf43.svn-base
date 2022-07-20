@@ -6,7 +6,7 @@ export interface IEditor {
     /**
      * on engine start
      */
-    start(scene: THREE.Scene, props?: any): void
+    start(scene: THREE.Scene): void
 
     /**
      * Called before the main update loop, after updateReady has been called on the engine subsystems.
