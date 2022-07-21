@@ -10,10 +10,9 @@ export class ObjectManager {
         gltfLoader.load(
             'monke.glb',
             object => {
-                object.userData.dragable = true
-                object.userData.name = object.scenes[0].name
-
                 scene.add(object.scene)
+                object.userData.draggable = true
+                object.userData.name = 'BOX'
             },
             xhr => {
                 console.log((xhr.loaded / xhr.total) * 100 + '% loaded')

@@ -76,6 +76,7 @@ export class InputManager {
         window.addEventListener('keydown', InputManager.onKeyDown)
         window.addEventListener('keyup', InputManager.onKeyUp)
 
+        window.addEventListener('mousemove', InputManager.onMouseMove)
         window.addEventListener('mousedown', InputManager.onMouseDown)
         window.addEventListener('mouseup', InputManager.onMouseUp)
         window.addEventListener('click', InputManager.onMouseClick)
@@ -108,6 +109,20 @@ export class InputManager {
     private static onKeyUp(event: KeyboardEvent): boolean {
         InputManager._keys[event.keyCode] = false
         return true
+    }
+
+    /**
+     * onMouseMove event func
+     * @param {MouseEvent} event
+     */
+    private static onMouseMove(event: MouseEvent): void {
+        if (event.button === 0) {
+            this._leftDown = false
+        } else if (event.button === 2) {
+            this._rightDown = false
+        }
+
+        // Message.send(MESSAGE_MOUSE_CLICK, this, event, new MouseContext(InputManager._leftDown, InputManager._rightDown))
     }
 
     /**

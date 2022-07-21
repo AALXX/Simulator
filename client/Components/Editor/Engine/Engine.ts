@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { ObjectManager } from './Object/ObjectManager'
 import { InputManager } from './Input/InputManager'
 import { MessageBus } from './MessageManager/MessageBus'
+import { BoxObject } from './Object/BoxObject'
 
 export namespace UiDesignEngine {
     /**
@@ -58,7 +59,8 @@ export namespace UiDesignEngine {
             // Trigger a resize to make sure the viewport is corrent.
             this.resize()
 
-            ObjectManager.load(this._scene)
+            // ObjectManager.load(this._scene)
+            BoxObject.load(this._scene)
             InputManager.initialize()
 
             // Begin the preloading phase, which waits for various thing to be loaded before starting the game.

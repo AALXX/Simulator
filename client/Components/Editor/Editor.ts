@@ -10,7 +10,7 @@ export class Editor implements IEditor, IMessageHandler {
     private raycaster: THREE.Raycaster
     private clickMouse: THREE.Vector2
     private moveMouse: THREE.Vector2
-    private dragable: THREE.Object3D
+    private draggable: THREE.Object3D
 
     private sceneRef: THREE.Scene
     private camera: THREE.Camera
@@ -52,12 +52,21 @@ export class Editor implements IEditor, IMessageHandler {
     public onMessage(message: Message): void {
         switch (message.code) {
             case 'MOUSE_CLICK':
-                this.clickMouse.x = (message.event.clientX / window.innerWidth) * 2 - 1
-                this.clickMouse.y = (message.event.clientY / window.innerHeight) * 2 - 1
+                if (this.draggable) {
+                    console.log('dropping draggable')
+                    this.draggable = null as any
+                    return
+                }
+
+                this.moveMouse.x = (message.event.clientX / window.innerWidth) * 2 - 1
+                this.moveMouse.y = -(message.event.clientY / window.innerHeight) * 2 + 1
 
                 this.raycaster.setFromCamera(this.clickMouse, this.camera)
                 const found = this.raycaster.intersectObjects(this.sceneRef.children)
-                console.log(found)
+                if (found.length > 0 && found[0].object.userData.draggable) {
+                    this.draggable = found[0].object
+                    console.log('CUm')
+                }
                 break
         }
     }
