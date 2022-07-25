@@ -2,10 +2,7 @@ import React, { useEffect, forwardRef } from 'react'
 import { Editor } from './Editor'
 import { UiDesignEngine } from './Engine/Engine'
 
-const GraphicsCanvas = forwardRef<HTMLCanvasElement>(function Link(
-    props: any,
-    ref: any
-) {
+const GraphicsCanvas = forwardRef<HTMLCanvasElement>(function Link(props: any, ref: any) {
     return <canvas id="editorArea" ref={ref} width={props.Width} />
 })
 
@@ -25,7 +22,7 @@ const StartingPoint = () => {
         window.onresize = () => {
             engine.resize()
         }
-    }, [])
+    }, [engine, CanvasRef])
 
     return (
         <div>

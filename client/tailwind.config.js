@@ -8,7 +8,12 @@ module.exports = {
     './src/**/*.{html,ts}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'darker-grey': '#3b3b3b',
+        'grey-default': '#505050',
+      }
+    },
   },
   plugins: [],
 }

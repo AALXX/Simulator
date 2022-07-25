@@ -6,7 +6,6 @@ import { InputManager } from './Input/InputManager'
 import { MessageBus } from './MessageManager/MessageBus'
 import { BoxObject } from './Object/BoxObject'
 import { Message } from './MessageManager/Message'
-import { EngineEvents } from './EngineEvents/EngineEvents'
 
 export namespace UiDesignEngine {
     /**
@@ -63,8 +62,6 @@ export namespace UiDesignEngine {
 
             InputManager.initSceneObjectInteract()
             InputManager.initialize()
-
-            EngineEvents.EngineEventsinit()
 
             // Trigger a resize to make sure the viewport is corrent.
             this.resize()

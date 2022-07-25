@@ -73,7 +73,6 @@ export class InputManager {
     private static clickMouse: THREE.Vector2
     private static moveMouse: THREE.Vector2
     private static draggable: THREE.Object3D
-    private static objectSelected: boolean = false
 
     /**
      * Initializes the input manager.
@@ -202,9 +201,8 @@ export class InputManager {
     }
 
     public static SelectObject(event: MouseEvent, cameraRef: THREE.Camera, sceneRef: THREE.Scene): void {
-        if (this.draggable || this.objectSelected) {
+        if (this.draggable) {
             this.draggable = null as any
-            // this.objectSelected = false
             return
         }
 
@@ -215,19 +213,12 @@ export class InputManager {
         if (found.length > 0) {
             if (found[0].object.userData.draggable) {
                 this.draggable = found[0].object
-                this.objectSelected = true
-                const SelectObjectEvent: CustomEvent = new CustomEvent('SelectObject', {
-                    detail: {
-                        name: found[0].object.userData.name
-                    }
-                })
-                window.dispatchEvent(SelectObjectEvent) //dispatch the select scene object event
             }
         }
     }
 
     public static dragObject(cameraRef: THREE.Camera, sceneRef: THREE.Scene) {
-        if (this.draggable != null && this.objectSelected == true) {
+        if (this.draggable != null) {
             const found = InputManager.intersect(this.moveMouse, cameraRef, sceneRef)
             if (found.length > 0) {
                 for (let i = 0; i < found.length; i++) {
