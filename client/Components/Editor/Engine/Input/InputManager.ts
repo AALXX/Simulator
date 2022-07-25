@@ -1,8 +1,10 @@
-import { RefObject } from 'react'
 import { Message } from '../MessageManager/Message'
 import * as THREE from 'three'
 
 // / <reference path="../Math/Vector2.ts" />
+
+/** The message code for mouse down events. */
+export const MESSAGE_MOUSE_MOVE: string = 'MOUSE_MOVE'
 
 /** The message code for mouse down events. */
 export const MESSAGE_MOUSE_DOWN: string = 'MOUSE_DOWN'
@@ -64,6 +66,14 @@ export class InputManager {
     private static _leftDown: boolean = false
     private static _rightDown: boolean = false
 
+    ///////////////////////////////////////
+    //select and move objects in scene vars
+    ///////////////////////////////////////
+    private static raycaster: THREE.Raycaster
+    private static clickMouse: THREE.Vector2
+    private static moveMouse: THREE.Vector2
+    private static draggable: THREE.Object3D
+
     /**
      * Initializes the input manager.
      * @param {RefObject<HTMLCanvasElement>} viewport The canvas element to attach input events to
@@ -81,6 +91,10 @@ export class InputManager {
         window.addEventListener('mouseup', InputManager.onMouseUp)
         window.addEventListener('click', InputManager.onMouseClick)
     }
+
+    //-----------------------------------------------------------------------------
+    //                              Key Input                                    //
+    //-----------------------------------------------------------------------------
 
     /**
      * Indicates if the provided key is currently down.
@@ -111,6 +125,10 @@ export class InputManager {
         return true
     }
 
+    //-----------------------------------------------------------------------------
+    //                              Mouse Input                                  //
+    //-----------------------------------------------------------------------------
+
     /**
      * onMouseMove event func
      * @param {MouseEvent} event
@@ -122,7 +140,7 @@ export class InputManager {
             this._rightDown = false
         }
 
-        // Message.send(MESSAGE_MOUSE_CLICK, this, event, new MouseContext(InputManager._leftDown, InputManager._rightDown))
+        Message.send(MESSAGE_MOUSE_MOVE, this, event)
     }
 
     /**
@@ -165,5 +183,55 @@ export class InputManager {
         }
 
         Message.send(MESSAGE_MOUSE_CLICK, this, event, new MouseContext(InputManager._leftDown, InputManager._rightDown))
+    }
+
+    //-----------------------------------------------------------------------------
+    //                              Move Objects in scene                        //
+    //-----------------------------------------------------------------------------
+
+    public static initSceneObjectInteract() {
+        this.raycaster = new THREE.Raycaster()
+        this.clickMouse = new THREE.Vector2()
+        this.moveMouse = new THREE.Vector2()
+    }
+
+    public static intersect(pos: THREE.Vector2, cameraRef: THREE.Camera, sceneRef: THREE.Scene) {
+        this.raycaster.setFromCamera(pos, cameraRef)
+        return this.raycaster.intersectObjects(sceneRef.children)
+    }
+
+    public static SelectObject(event: MouseEvent, cameraRef: THREE.Camera, sceneRef: THREE.Scene): void {
+        if (this.draggable) {
+            this.draggable = null as any
+            return
+        }
+
+        this.clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1
+        this.clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+
+        const found = InputManager.intersect(this.clickMouse, cameraRef, sceneRef)
+        if (found.length > 0) {
+            if (found[0].object.userData.draggable) {
+                this.draggable = found[0].object
+            }
+        }
+    }
+
+    public static dragObject(cameraRef: THREE.Camera, sceneRef: THREE.Scene) {
+        if (this.draggable != null) {
+            const found = InputManager.intersect(this.moveMouse, cameraRef, sceneRef)
+            if (found.length > 0) {
+                for (let i = 0; i < found.length; i++) {
+                    let target = found[i].point
+                    this.draggable.position.x = target.x
+                    this.draggable.position.z = target.z
+                }
+            }
+        }
+    }
+
+    public static UpdateMouseMove(event: MouseEvent) {
+        this.moveMouse.x = (event.clientX / window.innerWidth) * 2 - 1
+        this.moveMouse.y = -(event.clientY / window.innerHeight) * 2 + 1
     }
 }

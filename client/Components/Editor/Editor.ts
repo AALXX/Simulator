@@ -6,28 +6,11 @@ import { Message } from './Engine/MessageManager/Message'
 /**
  * Represents an object that holds editor-specific information.
  */
-export class Editor implements IEditor, IMessageHandler {
-    private raycaster: THREE.Raycaster
-    private clickMouse: THREE.Vector2
-    private moveMouse: THREE.Vector2
-    private draggable: THREE.Object3D
-
-    private sceneRef: THREE.Scene
-    private camera: THREE.Camera
-
+export class Editor implements IEditor {
     /**
      * on engine start
      */
-    public start(scene: THREE.Scene, props?: any): void {
-        Message.subscribe('MOUSE_CLICK', this)
-
-        this.raycaster = new THREE.Raycaster()
-        this.clickMouse = new THREE.Vector2()
-        this.moveMouse = new THREE.Vector2()
-
-        this.sceneRef = scene
-        this.camera = props.camera
-    }
+    public start(scene: THREE.Scene, props?: any): void {}
 
     /**
      * Called before the main update loop, after updateReady has been called on the engine subsystems.
@@ -43,32 +26,6 @@ export class Editor implements IEditor, IMessageHandler {
 
         const ambientLight = new THREE.AmbientLight(0xffffff)
         scene.add(dirLight, LightGizoms, ambientLight)
-    }
-
-    /**
-     * on message function
-     * @param {Message} message
-     */
-    public onMessage(message: Message): void {
-        switch (message.code) {
-            case 'MOUSE_CLICK':
-                if (this.draggable) {
-                    console.log('dropping draggable')
-                    this.draggable = null as any
-                    return
-                }
-
-                this.moveMouse.x = (message.event.clientX / window.innerWidth) * 2 - 1
-                this.moveMouse.y = -(message.event.clientY / window.innerHeight) * 2 + 1
-
-                this.raycaster.setFromCamera(this.clickMouse, this.camera)
-                const found = this.raycaster.intersectObjects(this.sceneRef.children)
-                if (found.length > 0 && found[0].object.userData.draggable) {
-                    this.draggable = found[0].object
-                    console.log('CUm')
-                }
-                break
-        }
     }
 
     /**

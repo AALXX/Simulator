@@ -5,6 +5,7 @@ import { ObjectManager } from './Object/ObjectManager'
 import { InputManager } from './Input/InputManager'
 import { MessageBus } from './MessageManager/MessageBus'
 import { BoxObject } from './Object/BoxObject'
+import { Message } from './MessageManager/Message'
 
 export namespace UiDesignEngine {
     /**
@@ -56,12 +57,17 @@ export namespace UiDesignEngine {
 
             this._controls = new OrbitControls(this._camera, this._renderer.domElement)
 
+            Message.subscribe('MOUSE_CLICK', this)
+            Message.subscribe('MOUSE_MOVE', this)
+
+            InputManager.initSceneObjectInteract()
+            InputManager.initialize()
+
             // Trigger a resize to make sure the viewport is corrent.
             this.resize()
 
-            // ObjectManager.load(this._scene)
+            // ObjectManager.zload(this._scene)
             BoxObject.load(this._scene)
-            InputManager.initialize()
 
             // Begin the preloading phase, which waits for various thing to be loaded before starting the game.
             this.preloading()
@@ -92,6 +98,21 @@ export namespace UiDesignEngine {
         }
 
         /**
+         * on message function
+         * @param {Message} message
+         */
+        public onMessage(message: Message): void {
+            switch (message.code) {
+                case 'MOUSE_CLICK':
+                    InputManager.SelectObject(message.event, this._camera, this._scene)
+                    break
+                case 'MOUSE_MOVE':
+                    InputManager.UpdateMouseMove(message.event)
+                    break
+            }
+        }
+
+        /**
          * main game loop
          */
         private loop(): void {
@@ -115,6 +136,9 @@ export namespace UiDesignEngine {
          */
         private update(delta: number): void {
             MessageBus.update(delta)
+
+            //Update drag object
+            InputManager.dragObject(this._camera, this._scene)
 
             this._editor.update(delta)
 
