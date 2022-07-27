@@ -1,16 +1,19 @@
 import * as THREE from 'three'
 import { IEditor } from './Engine/IEngine'
-import { IMessageHandler } from './Engine/MessageManager/IMessageHandler'
-import { Message } from './Engine/MessageManager/Message'
+import { BoxObject } from './Engine/Object/BoxObject'
 
 /**
  * Represents an object that holds editor-specific information.
  */
 export class Editor implements IEditor {
+    private box: BoxObject = new BoxObject()
+
     /**
      * on engine start
      */
-    public start(scene: THREE.Scene, props?: any): void {}
+    public start(scene: THREE.Scene, props?: any): void {
+        this.box.load(scene)
+    }
 
     /**
      * Called before the main update loop, after updateReady has been called on the engine subsystems.
@@ -32,10 +35,7 @@ export class Editor implements IEditor {
      * Performs update procedures on this editor. Called after all engine subsystems have updated.
      * @param {number} time The delta time in milliseconds since the last update.
      */
-    public update(time: number): void {}
-
-    /**
-     * Renders this editor . Called after all engine subsystems have rendered.
-     */
-    public render(): void {}
+    public update(time: number): void {
+        this.box.update()
+    }
 }

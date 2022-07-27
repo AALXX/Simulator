@@ -1,13 +1,17 @@
 import * as THREE from 'three'
+import { InputManager, Keys } from '../Input/InputManager'
+import { IMessageHandler } from '../MessageManager/IMessageHandler'
+import { Message } from '../MessageManager/Message'
 
-export class BoxObject {
+export class BoxObject implements IMessageHandler {
+    private _isSelected: boolean = false
+
     /** Private constructor to enforce singleton pattern. */
-    private constructor() {}
+    public constructor() {}
 
     /** Loads this manager. */
-    public static load(scene: THREE.Scene): void {
+    public load(scene: THREE.Scene): void {
         let scale = { x: 6, y: 6, z: 6 }
-        let pos = { x: 15, y: scale.y / 2, z: 2 }
 
         let box = new THREE.Mesh(new THREE.BoxBufferGeometry(), new THREE.MeshPhongMaterial({ color: 0xdc143c }))
         // box.position.set(pos.x, pos.y, pos.z)
@@ -15,7 +19,28 @@ export class BoxObject {
 
         scene.add(box)
 
-        box.userData.draggable = true
+        Message.subscribe('SELECT_OBJECT', this)
+        Message.subscribe('DESELECT_OBJECT', this)
+
+        box.userData.selectable = true
         box.userData.name = 'BOX'
+    }
+
+    onMessage(message: Message): void {
+        switch (message.code) {
+            case 'SELECT_OBJECT':
+                this._isSelected = true
+                break
+            case 'DESELECT_OBJECT':
+                this._isSelected = false
+                break
+        }
+    }
+
+    public update(): void {
+        if (this._isSelected && InputManager.isKeyDown(Keys.G_KEY)) {
+            const SelectObjectEvent: CustomEvent = new CustomEvent('DragObject')
+            window.dispatchEvent(SelectObjectEvent) //dispatch the select scene object event
+        }
     }
 }

@@ -19,9 +19,4 @@ export interface IEditor {
      * @param time The delta time in milliseconds since the last update.
      */
     update(time: number): void
-
-    /**
-     * Renders this editor. Called after all engine subsystems have rendered.
-     */
-    render(): void
 }

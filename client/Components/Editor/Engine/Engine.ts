@@ -69,8 +69,7 @@ export namespace UiDesignEngine {
             // Trigger a resize to make sure the viewport is corrent.
             this.resize()
 
-            // ObjectManager.z  load(this._scene)
-            BoxObject.load(this._scene)
+            // ObjectManager.load(this._scene)
 
             // Begin the preloading phase, which waits for various thing to be loaded before starting the game.
             this.preloading()

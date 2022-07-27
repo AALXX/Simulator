@@ -15,6 +15,10 @@ export const MESSAGE_MOUSE_UP: string = 'MOUSE_UP'
 /** The message code for mouse click events. */
 export const MESSAGE_MOUSE_CLICK: string = 'MOUSE_CLICK'
 
+export const MESSAGE_SELECT_OBJECT: string = 'SELECT_OBJECT'
+
+export const MESSAGE_DESELECT_OBJECT: string = 'DESELECT_OBJECT'
+
 /* eslint-disable */
 
 /** Defines key codes for keyboard keys. */
@@ -30,6 +34,8 @@ export enum Keys {
 
     /** The down arrow key */
     ARROW_DOWN = 40,
+
+    G_KEY = 71,
 
     ControlLeft = 17
 }
@@ -59,6 +65,20 @@ export class MouseContext {
     }
 }
 
+/** Contains mouse state data to be used throughout the engine. */
+export class SelectObjectContext {
+    /** Indicates if the left mouse button is down. Default: false. */
+    public name: string
+
+    /**
+     * class constructor
+     * @param {string} name
+     */
+    public constructor(name: string) {
+        this.name = name
+    }
+}
+
 /** Manages all input from devices such as the mouse and keyboard. */
 export class InputManager {
     private static _keys: boolean[] = []
@@ -72,8 +92,9 @@ export class InputManager {
     private static raycaster: THREE.Raycaster
     private static clickMouse: THREE.Vector2
     private static moveMouse: THREE.Vector2
-    private static draggable: THREE.Object3D
-    private static objectSelected: boolean = false
+    private static selectedObject: THREE.Object3D
+    private static isObjectSelected: boolean = false
+    public static objectInDragMode: boolean = false
 
     /**
      * Initializes the input manager.
@@ -201,39 +222,54 @@ export class InputManager {
         return this.raycaster.intersectObjects(sceneRef.children)
     }
 
+    private static selectOtherObject(name: string, cameraRef: THREE.Camera, sceneRef: THREE.Scene): Boolean {
+        const found = InputManager.intersect(this.clickMouse, cameraRef, sceneRef)
+
+        if (found[0].object.userData.name == name) {
+            return false
+        }
+
+        return true
+    }
+
     public static SelectObject(event: MouseEvent, cameraRef: THREE.Camera, sceneRef: THREE.Scene): void {
-        if (this.draggable || this.objectSelected) {
-            this.draggable = null as any
-            // this.objectSelected = false
+        const found = InputManager.intersect(this.clickMouse, cameraRef, sceneRef)
+
+        if (this.isObjectSelected && InputManager.selectOtherObject(found[0].object.userData.name, cameraRef, sceneRef)) {
+            this.selectedObject = null as any
+            this.isObjectSelected = false
+
+            Message.send(MESSAGE_DESELECT_OBJECT, this, event)
+
+            return
+        }
+
+        if (this.isObjectSelected && this.objectInDragMode) {
+            this.objectInDragMode = false
+
             return
         }
 
         this.clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1
         this.clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1
 
-        const found = InputManager.intersect(this.clickMouse, cameraRef, sceneRef)
         if (found.length > 0) {
-            if (found[0].object.userData.draggable) {
-                this.draggable = found[0].object
-                this.objectSelected = true
-                const SelectObjectEvent: CustomEvent = new CustomEvent('SelectObject', {
-                    detail: {
-                        name: found[0].object.userData.name
-                    }
-                })
-                window.dispatchEvent(SelectObjectEvent) //dispatch the select scene object event
+            if (found[0].object.userData.selectable) {
+                this.selectedObject = found[0].object
+                this.isObjectSelected = true
+                Message.send(MESSAGE_SELECT_OBJECT, this, event, new SelectObjectContext(found[0].object.userData.name))
             }
         }
     }
 
-    public static dragObject(cameraRef: THREE.Camera, sceneRef: THREE.Scene) {
-        if (this.draggable != null && this.objectSelected == true) {
+    public static dragObject(cameraRef: THREE.Camera, sceneRef: THREE.Scene): void {
+        if (this.selectedObject != null && this.isObjectSelected == true && this.objectInDragMode) {
             const found = InputManager.intersect(this.moveMouse, cameraRef, sceneRef)
             if (found.length > 0) {
                 for (let i = 0; i < found.length; i++) {
                     let target = found[i].point
-                    this.draggable.position.x = target.x
-                    this.draggable.position.z = target.z
+                    this.selectedObject.position.x = target.x
+                    this.selectedObject.position.z = target.z
                 }
             }
         }

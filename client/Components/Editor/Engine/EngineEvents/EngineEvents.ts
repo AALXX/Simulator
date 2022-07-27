@@ -1,19 +1,19 @@
+import { InputManager } from '../Input/InputManager'
+
 /**
  *  recives events from front-end
  */
 export class EngineEvents {
     public static EngineEventsinit(): void {
-        EngineEvents.listenToEvents('SelectObject')
+        EngineEvents.listenToEvents('DragObject')
     }
 
     /**
      * change Object Width
      * @param {any} data
      */
-    private static GetSelectedObjectData(data: any): void {
-        console.log(data)
-
-        // EditorEntity.(data.componentName);
+    private static setObjectIntoDragMode(data: any): void {
+        InputManager.objectInDragMode = true
     }
 
     /**
@@ -24,9 +24,9 @@ export class EngineEvents {
         /* eslint-disable */
 
         switch (eventName) {
-            case 'SelectObject':
+            case 'DragObject':
                 window.addEventListener(eventName, (e: any) => {
-                    this.GetSelectedObjectData(e.detail)
+                    this.setObjectIntoDragMode(e.detail)
                 })
                 break
             default:
