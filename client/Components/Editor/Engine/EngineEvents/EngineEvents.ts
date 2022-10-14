@@ -12,9 +12,7 @@ export class EngineEvents {
      * change Object Width
      * @param {any} data
      */
-    private static setObjectIntoDragMode(data: any): void {
-        InputManager.objectInDragMode = true
-    }
+    private static setObjectIntoDragMode(data: any): void {}
 
     /**
      * listenToevents

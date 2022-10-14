@@ -1,0 +1,66 @@
+{
+    "name": "TestScene",
+    "PrjToken":"kw8rybzkj4ova9uyj1",
+    "description": "A simple test level for... testing.",
+    "id": 0,
+    "objects": [
+      {
+        "name": "testCube",
+        "type": "BoxObject",
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale":{
+            "x": 6,
+            "y": 6,
+            "z": 6
+          }
+        },
+        "physicsProprieties":{
+          "mass":9.8
+        },
+        "components": [
+
+        ],
+        "scripts": [
+          {
+            "name": "ComponentMovementBehavior",
+            "type": "ComponentMovement",
+            "ownerName": "testCube"
+          }
+        ]
+      },
+      {
+        "name": "testCube2",
+        "type": "BoxObject",
+        "transform": {
+          "position": {
+            "x": 16,
+            "y": 0,
+            "z": 0
+          },
+          "scale":{
+            "x": 6,
+            "y": 6,
+            "z": 6
+          }
+        },
+        "physicsProprieties":{
+          "mass":9.8
+        },
+        "components": [
+
+        ],
+        "scripts": [
+          {
+            "name": "ComponentMovementBehavior",
+            "type": "ComponentMovement",
+            "ownerName": "testCube2"
+          }
+        ]
+      }
+    ]
+}

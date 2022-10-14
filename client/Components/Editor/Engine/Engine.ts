@@ -7,6 +7,8 @@ import { MessageBus } from './MessageManager/MessageBus'
 import { BoxObject } from './Object/BoxObject'
 import { Message } from './MessageManager/Message'
 import { EngineEvents } from './EngineEvents/EngineEvents'
+import { AssetManager } from './AssetsManager/AssetsManager'
+import { LevelManager } from './Level/Levelmanager'
 
 export namespace UiDesignEngine {
     /**
@@ -61,10 +63,15 @@ export namespace UiDesignEngine {
             Message.subscribe('MOUSE_CLICK', this)
             Message.subscribe('MOUSE_MOVE', this)
 
+            // Initialize various sub-systems.
+            AssetManager.initialize()
+
             InputManager.initSceneObjectInteract()
             InputManager.initialize()
 
             EngineEvents.EngineEventsinit()
+
+            LevelManager.load(this._scene)
 
             // Trigger a resize to make sure the viewport is corrent.
             this.resize()
@@ -89,12 +96,17 @@ export namespace UiDesignEngine {
             this._editor.updateReady(this._scene)
             // Make sure to always update the message bus.
             MessageBus.update(0)
-
             //Engine Default utilities
             const gridFloor = new THREE.GridHelper(200, 50)
             const Axes = new THREE.AxesHelper(40)
             Axes.position.y = 0.1
             this._scene.add(gridFloor, Axes)
+
+            if (!LevelManager.isLoaded) {
+                requestAnimationFrame(this.preloading.bind(this))
+                return
+            }
+
             // Kick off the render loop.
             this.loop()
         }
@@ -124,7 +136,6 @@ export namespace UiDesignEngine {
             const delta = performance.now() - this._previousTime
 
             this.update(delta)
-            this.render(delta)
 
             this._previousTime = performance.now()
             this._renderer.render(this._scene, this._camera)
@@ -139,18 +150,23 @@ export namespace UiDesignEngine {
         private update(delta: number): void {
             MessageBus.update(delta)
 
+            if (LevelManager.isLoaded && LevelManager.activeLevel !== undefined && LevelManager.activeLevel.isLoaded) {
+                LevelManager.activeLevel.update(delta)
+            }
+
             //Update drag object
             InputManager.dragObject(this._camera, this._scene)
+            InputManager.scaleObject(this._camera, this._scene)
+
+            if (InputManager.objectInDragMode || InputManager.objectInScaleMode) {
+                this._controls.enabled = false
+            } else {
+                this._controls.enabled = true
+            }
 
             this._editor.update(delta)
 
             this._controls.update()
         }
-
-        /**
-         * Render method
-         * @param {number} delta
-         */
-        private render(delta: number): void {}
     }
 }

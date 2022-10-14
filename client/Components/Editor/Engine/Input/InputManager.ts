@@ -15,10 +15,6 @@ export const MESSAGE_MOUSE_UP: string = 'MOUSE_UP'
 /** The message code for mouse click events. */
 export const MESSAGE_MOUSE_CLICK: string = 'MOUSE_CLICK'
 
-export const MESSAGE_SELECT_OBJECT: string = 'SELECT_OBJECT'
-
-export const MESSAGE_DESELECT_OBJECT: string = 'DESELECT_OBJECT'
-
 /* eslint-disable */
 
 /** Defines key codes for keyboard keys. */
@@ -37,6 +33,16 @@ export enum Keys {
 
     G_KEY = 71,
 
+    S_KEY = 83,
+
+    X_KEY = 88,
+
+    Y_KEY = 89,
+
+    Z_KEY = 90,
+
+    ESC_KEY = 27,
+
     ControlLeft = 17
 }
 
@@ -52,6 +58,8 @@ export class MouseContext {
 
     /** The mouse position. */
     public position: THREE.Vec2
+
+    private _objectPositionBeforeEnterDragMode: THREE.Vector3
 
     /**
      * class constructor
@@ -95,6 +103,7 @@ export class InputManager {
     private static selectedObject: THREE.Object3D
     private static isObjectSelected: boolean = false
     public static objectInDragMode: boolean = false
+    public static objectInScaleMode: boolean = false
 
     /**
      * Initializes the input manager.
@@ -213,7 +222,8 @@ export class InputManager {
 
     public static initSceneObjectInteract() {
         this.raycaster = new THREE.Raycaster()
-        this.clickMouse = new THREE.Vector2()
+        this.clickMouse = new THREE.Vector2() // create once
+
         this.moveMouse = new THREE.Vector2()
     }
 
@@ -233,31 +243,32 @@ export class InputManager {
     }
 
     public static SelectObject(event: MouseEvent, cameraRef: THREE.Camera, sceneRef: THREE.Scene): void {
-        const found = InputManager.intersect(this.clickMouse, cameraRef, sceneRef)
-
-        if (this.isObjectSelected && InputManager.selectOtherObject(found[0].object.userData.name, cameraRef, sceneRef)) {
-            this.selectedObject = null as any
-            this.isObjectSelected = false
-
-            Message.send(MESSAGE_DESELECT_OBJECT, this, event)
-
-            return
-        }
-
+        const found = InputManager.intersect(this.moveMouse, cameraRef, sceneRef)
         if (this.isObjectSelected && this.objectInDragMode) {
             this.objectInDragMode = false
-
             return
         }
 
-        this.clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1
-        this.clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+        if (this.isObjectSelected && this.objectInScaleMode) {
+            this.objectInScaleMode = false
+            return
+        }
 
-        if (found.length > 0) {
-            if (found[0].object.userData.selectable) {
-                this.selectedObject = found[0].object
-                this.isObjectSelected = true
-                Message.send(MESSAGE_SELECT_OBJECT, this, event, new SelectObjectContext(found[0].object.userData.name))
+        if (found[0] != undefined && found[0].object != null && found[0].object.userData.selectable) {
+            if (this.isObjectSelected && InputManager.selectOtherObject(found[0].object.userData.name, cameraRef, sceneRef)) {
+                this.selectedObject = null as any
+                this.isObjectSelected = false
+                Message.send(`DESELECT_OBJECT: ${found[0].object.userData.name}`, this, event)
+                return
+            }
+            this.clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1
+            this.clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+            if (found.length > 0) {
+                if (found[0].object.userData.selectable) {
+                    this.selectedObject = found[0].object
+                    this.isObjectSelected = true
+                    Message.send(`SELECT_OBJECT: ${found[0].object.userData.name}`, this, event, new SelectObjectContext(found[0].object.userData.name))
+                }
             }
         }
     }
@@ -266,10 +277,67 @@ export class InputManager {
         if (this.selectedObject != null && this.isObjectSelected == true && this.objectInDragMode) {
             const found = InputManager.intersect(this.moveMouse, cameraRef, sceneRef)
             if (found.length > 0) {
-                for (let i = 0; i < found.length; i++) {
-                    let target = found[i].point
-                    this.selectedObject.position.x = target.x
-                    this.selectedObject.position.z = target.z
+                if (InputManager.isKeyDown(Keys.ESC_KEY)) {
+                    console.log('object')
+                    // this.selectedObject.position
+                }
+
+                if (InputManager.isKeyDown(Keys.X_KEY)) {
+                    for (let i = 0; i < found.length; i++) {
+                        let target = found[i].point
+                        this.selectedObject.position.x = target.x
+                    }
+                } else if (InputManager.isKeyDown(Keys.Y_KEY)) {
+                    for (let i = 0; i < found.length; i++) {
+                        let target = found[i].point
+                        this.selectedObject.position.y = -target.z
+                    }
+                } else if (InputManager.isKeyDown(Keys.Z_KEY)) {
+                    for (let i = 0; i < found.length; i++) {
+                        let target = found[i].point
+                        this.selectedObject.position.z = target.z
+                    }
+                } else {
+                    for (let i = 0; i < found.length; i++) {
+                        let target = found[i].point
+                        this.selectedObject.position.x = target.x
+                        this.selectedObject.position.z = target.z
+                    }
+                }
+            }
+        }
+    }
+
+    public static scaleObject(cameraRef: THREE.Camera, sceneRef: THREE.Scene): void {
+        if (this.selectedObject != null && this.isObjectSelected == true && this.objectInScaleMode) {
+            const found = InputManager.intersect(this.moveMouse, cameraRef, sceneRef)
+            if (found.length > 0) {
+                if (InputManager.isKeyDown(Keys.ESC_KEY)) {
+                    console.log('object')
+                    // this.selectedObject.position
+                }
+
+                if (InputManager.isKeyDown(Keys.X_KEY)) {
+                    for (let i = 0; i < found.length; i++) {
+                        let target = found[i].point
+                        this.selectedObject.scale.x = target.x
+                    }
+                } else if (InputManager.isKeyDown(Keys.Y_KEY)) {
+                    for (let i = 0; i < found.length; i++) {
+                        let target = found[i].point
+                        this.selectedObject.scale.y = target.x / 10
+                    }
+                } else if (InputManager.isKeyDown(Keys.Z_KEY)) {
+                    for (let i = 0; i < found.length; i++) {
+                        let target = found[i].point
+                        this.selectedObject.scale.z = target.x
+                    }
+                } else {
+                    for (let i = 0; i < found.length; i++) {
+                        let target = found[i].point
+                        this.selectedObject.scale.x = target.x
+                        this.selectedObject.scale.z = target.z
+                    }
                 }
             }
         }
