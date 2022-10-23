@@ -36,19 +36,13 @@ const LeftPanel: FC<LeftPanelProps> = props => {
         setobjectTransform(e.detail.transform)
     }
 
-    const UnSelectTheObject = (e: any) => {
-        console.log(e.detail.name)
-        window.removeEventListener(`UpdateObject`, UpdateDataFromEngine)
-    }
-
     useEffect(() => {
         window.addEventListener('SelectObject', SetDataFromEngine)
-        window.addEventListener('UnSelectObject', UnSelectTheObject)
         window.addEventListener(`UpdateObject`, UpdateDataFromEngine)
 
         return () => {
             window.removeEventListener('SelectObject', SetDataFromEngine)
-            window.removeEventListener('UnSelectObject', UnSelectTheObject)
+            window.addEventListener(`UpdateObject`, UpdateDataFromEngine)
         }
     }, [])
 

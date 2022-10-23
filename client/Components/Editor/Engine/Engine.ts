@@ -21,7 +21,7 @@ export namespace UiDesignEngine {
 
         private _editor: IEditor
         private _scene: THREE.Scene
-        private _camera: THREE.Camera
+        private _camera: THREE.PerspectiveCamera
         private _renderer: THREE.WebGLRenderer
 
         private _controls: OrbitControls
@@ -36,7 +36,13 @@ export namespace UiDesignEngine {
         /**
          * Resize Method
          */
-        public resize(): void {}
+        public resize(): void {
+            console.log('first')
+            this._camera.aspect = window.innerWidth / window.innerHeight
+            this._camera.updateProjectionMatrix()
+
+            this._renderer.setSize(window.innerWidth, window.innerHeight)
+        }
 
         /**
          * Start Method

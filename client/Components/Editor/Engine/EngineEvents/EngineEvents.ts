@@ -5,14 +5,8 @@ import { InputManager } from '../Input/InputManager'
  */
 export class EngineEvents {
     public static EngineEventsinit(): void {
-        EngineEvents.listenToEvents('DragObject')
+        EngineEvents.listenToEvents('SelectObject')
     }
-
-    /**
-     * change Object Width
-     * @param {any} data
-     */
-    private static setObjectIntoDragMode(data: any): void {}
 
     /**
      * listenToevents
@@ -22,10 +16,7 @@ export class EngineEvents {
         /* eslint-disable */
 
         switch (eventName) {
-            case 'DragObject':
-                window.addEventListener(eventName, (e: any) => {
-                    this.setObjectIntoDragMode(e.detail)
-                })
+            case 'SelectObject':
                 break
             default:
                 break

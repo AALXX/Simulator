@@ -20,9 +20,6 @@ export class EditorEntity implements IMessageHandler {
 
     private _scene: THREE.Scene
 
-    private SelectObjectEvent: CustomEvent
-    private DeSelectObjectEvent: CustomEvent
-
     /** The name of this object. */
     public name: string
 
@@ -128,11 +125,21 @@ export class EditorEntity implements IMessageHandler {
         switch (message.code) {
             case `SELECT_OBJECT: ${this.name}`:
                 this._isSelected = true
-                window.dispatchEvent(this.SelectObjectEvent) //dispatch the select scene object event
+                window.dispatchEvent(
+                    new CustomEvent(`SelectObject`, {
+                        detail: {
+                            name: this.name,
+                            transform: {
+                                position: this.object.position,
+                                scale: this.object.scale
+                            }
+                        }
+                    })
+                )
                 break
             case `DESELECT_OBJECT: ${this.name}`:
-                window.dispatchEvent(this.DeSelectObjectEvent) //dispatch the select scene object event
-                this._isSelected = false
+                this._isSelected = true
+                console.log(this._isSelected)
                 break
         }
     }
@@ -157,22 +164,6 @@ export class EditorEntity implements IMessageHandler {
         Message.subscribe(`SELECT_OBJECT: ${this.name}`, this)
         Message.subscribe(`DESELECT_OBJECT: ${this.name}`, this)
 
-        this.SelectObjectEvent = new CustomEvent('SelectObject', {
-            detail: {
-                name: this.object.userData.name,
-                transform: {
-                    position: this.object.position,
-                    scale: this.object.scale
-                }
-            }
-        })
-
-        this.DeSelectObjectEvent = new CustomEvent(`UnSelectObject`, {
-            detail: {
-                name: this.object.userData.name
-            }
-        })
-
         for (const c of this._components) {
             c.load()
         }
@@ -181,7 +172,7 @@ export class EditorEntity implements IMessageHandler {
     /** Performs pre-update procedures on this entity. */
     public updateReady(): void {
         for (const c of this._components) {
-            c.updateReady()
+            c.updateReady() 
         }
     }
 
@@ -199,7 +190,12 @@ export class EditorEntity implements IMessageHandler {
             InputManager.objectInScaleMode = true
         }
 
+        if (this._isSelected && InputManager.isKeyDown(Keys.ESC_KEY)) {
+            this._isSelected = false
+        }
+
         if (this._isSelected) {
+            // console.log(this.name)
             window.dispatchEvent(
                 new CustomEvent(`UpdateObject`, {
                     detail: {
